@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GoGoDC</title>
+<style>
+:root {
+  --bg:#0d0f14; --bg2:#111827; --bg3:#1a2332;
+  --text:#e2e8f0; --text2:#94a3b8; --text3:#64748b;
+  --border:#1e3a5f; --border2:#3b5278;
+  --green:#4caf50; --green-bg:#001a00; --green-border:#2e7d32;
+  --red:#ef5350; --red-bg:#2d0a0a; --red-border:#b71c1c;
+  --yellow:#ffc107; --yellow-bg:#2d2700; --yellow-border:#f9a825;
+  --blue:#64b5f6; --blue-bg:#0a1628; --blue-border:#1565c0;
+  --accent:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.hdr{padding:.875rem 1rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10}
+.hdr-title{font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.15em;text-transform:uppercase}
+.hdr-sub{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:.05em}
+.icon-btn{background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;color:var(--text2);font-family:inherit}
+.icon-btn:active{background:var(--bg3)}
+.steps{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;background:var(--bg);position:sticky;top:53px;z-index:9}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:0 0 auto;padding:9px 12px;font-size:10px;color:var(--text3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase}
+.step.on{color:var(--blue);border-bottom-color:var(--blue)}
+.step.done{color:var(--green)}
+.pg{display:none;padding:1rem;flex:1}
+.pg.on{display:block}
+
+/* Form elements */
+.fg{margin-bottom:.875rem}
+.lbl{font-size:11px;color:var(--text2);margin-bottom:4px;display:block;font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.08em}
+.hint{font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0}
+input[type=text],input[type=number],input[type=password],select{
+  width:100%;padding:9px 11px;font-size:14px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:4px;color:var(--text);font-family:inherit;
+  -webkit-appearance:none;appearance:none
+}
+input[type=number]{color:var(--yellow);font-family:'Courier New',monospace;font-weight:600}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+input[type=text]#ticker{font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:4px;color:var(--blue);text-align:center}
+
+.btn{width:100%;padding:11px;font-size:13px;font-weight:700;border-radius:4px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;margin-top:.5rem;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;transition:background .15s}
+.btn:active{transform:scale(.98)}
+.bp{background:var(--blue-border);color:#fff;border-color:var(--blue-border)}
+.bp:hover{background:#1976d2}
+.btn-sm{padding:7px 14px;font-size:11px;width:auto;margin:0}
+.btn-row{display:flex;gap:8px;margin-top:.75rem}
+
+/* Info boxes */
+.box{border-radius:4px;padding:.75rem 1rem;margin:.5rem 0;border-left:3px solid}
+.box.g{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.box.r{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.box.y{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)}
+.box.b{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.box.n{background:var(--bg2);border-color:var(--border);color:var(--text2)}
+.box-title{font-size:12px;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.08em}
+.box-sub{font-size:11px;margin-top:3px;opacity:.85;color:var(--text2)}
+
+/* Section headers */
+.sh{font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;background:var(--bg2);border-left:3px solid var(--blue-border);padding:.4rem .75rem;margin:1rem 0 .5rem}
+.sh:first-child{margin-top:0}
+
+/* Data rows */
+.dr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px}
+.dr:last-child{border-bottom:none}
+.dk{color:var(--text2);flex:1;font-size:11px;font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.05em}
+.dv{color:var(--text);font-weight:600;text-align:right;font-family:'Courier New',monospace}
+.dv.g{color:var(--green)}
+.dv.r{color:var(--red)}
+.dv.y{color:var(--yellow)}
+.dv.b{color:var(--blue)}
+
+/* Gate rows */
+.gr{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.gr:last-child{border-bottom:none}
+.gt{flex:1}
+.gt-label{font-size:12px;color:var(--text)}
+.gt-sub{font-size:10px;color:var(--text3);margin-top:1px;font-family:'Courier New',monospace}
+.gb{font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0;font-weight:700;font-family:'Courier New',monospace}
+.pass{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.fail{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.warn{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+.na{background:var(--bg2);color:var(--text3);border:1px solid var(--border)}
+
+/* Bucket picker */
+.rbg{display:flex;gap:8px}
+.tb{flex:1;padding:10px 4px;text-align:center;font-size:11px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:var(--bg2);color:var(--text2);line-height:1.5;font-family:'Courier New',monospace}
+.tb:active{transform:scale(.97)}
+.tb.sel{background:var(--blue-border);color:#fff;border-color:var(--blue-border)}
+
+/* Score display */
+.score-big{text-align:center;padding:1.25rem 0}
+.score-num{font-size:52px;font-weight:700;color:var(--text);font-family:'Courier New',monospace;line-height:1}
+.score-den{font-size:20px;color:var(--text3)}
+.score-pct{font-size:13px;color:var(--text2);margin-top:6px;font-family:'Courier New',monospace}
+
+/* Grid */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:9px 12px}
+.sc-label{font-size:10px;color:var(--text3);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.08em}
+.sc-val{font-size:18px;font-weight:700;color:var(--text);margin-top:2px;font-family:'Courier New',monospace}
+
+/* Toggle overrides */
+.trow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
+.trow:last-child{border-bottom:none}
+.tl{font-size:12px;color:var(--text);flex:1}
+.ts{font-size:10px;color:var(--text3);margin-top:1px;font-family:'Courier New',monospace}
+.tbs{display:flex;gap:4px;flex-shrink:0}
+.xb{padding:4px 10px;font-size:11px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;background:var(--bg2);color:var(--text2);font-family:'Courier New',monospace}
+.xb.xp{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.xb.xf{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+
+/* Flag rows */
+.flag-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.5}
+.flag-row:last-child{border-bottom:none}
+.chip{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;flex-shrink:0;font-weight:700;font-family:'Courier New',monospace;margin-top:1px}
+.chip.g{background:var(--green-bg);color:var(--green)}
+.chip.r{background:var(--red-bg);color:var(--red)}
+.chip.y{background:var(--yellow-bg);color:var(--yellow)}
+.chip.n{background:var(--bg2);color:var(--text3)}
+
+.divider{height:1px;background:var(--border);margin:.875rem 0}
+.loading{text-align:center;padding:1.5rem;color:var(--text2);font-size:13px;font-family:'Courier New',monospace}
+.spin{display:inline-block;animation:spin 1s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog{height:2px;background:var(--bg3);margin:.75rem 0;overflow:hidden}
+.prog-bar{height:100%;background:var(--blue);transition:width .4s}
+
+.data-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:.75rem 1rem;margin-bottom:.5rem}
+
+/* Final send button — prominent */
+.send-btn{width:100%;padding:14px;font-size:14px;font-weight:700;border-radius:4px;border:2px solid var(--green-border);background:var(--green-bg);color:var(--green);cursor:pointer;margin-top:1rem;font-family:'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
+.send-btn:active{transform:scale(.98)}
+.send-btn:hover{background:#002a00}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">GoGoDC</div>
+    <div class="hdr-sub">Pre-Template → Template 1 v6.3</div>
+  </div>
+  <button class="icon-btn" onclick="goTo(6)">⚙ Keys</button>
+</div>
+
+<div class="steps">
+  <button class="step on"  onclick="goTo(0)">01 Ticker</button>
+  <button class="step"     onclick="goTo(1)">02 Data</button>
+  <button class="step"     onclick="goTo(2)">03 Chart</button>
+  <button class="step"     onclick="goTo(3)">04 Gates</button>
+  <button class="step"     onclick="goTo(4)">05 Score</button>
+  <button class="step"     onclick="goTo(5)">06 Run</button>
+</div>
+
+<!-- STEP 01: TICKER -->
+<div class="pg on" id="p0">
+  <div id="keyWarn"></div>
+  <div class="fg" style="margin-top:.75rem">
+    <label class="lbl">Ticker symbol</label>
+    <input type="text" id="ticker" placeholder="NVDA" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')" />
+  </div>
+  <div class="fg">
+    <label class="lbl">Timeframe bucket</label>
+    <div class="rbg" id="bpick">
+      <button class="tb sel" onclick="setBucket('swing')">🟢 SWING<br><span style="font-size:9px;opacity:.7">1–3mo</span></button>
+      <button class="tb"     onclick="setBucket('value')">🔵 VALUE<br><span style="font-size:9px;opacity:.7">6–12mo</span></button>
+      <button class="tb"     onclick="setBucket('lt')">🟣 LONG-TERM<br><span style="font-size:9px;opacity:.7">5–10yr</span></button>
+    </div>
+  </div>
+  <button class="btn bp" onclick="fetchData()">▶ Fetch All Data</button>
+  <div id="fetchMsg"></div>
+  <div class="prog" id="progWrap" style="display:none"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+</div>
+
+<!-- STEP 02: DATA REVIEW -->
+<div class="pg" id="p1">
+  <div class="sh">Price & Market</div>
+  <div class="data-wrap" id="d-price"></div>
+  <div class="sh">Analyst Targets</div>
+  <div class="data-wrap" id="d-analyst"></div>
+  <div class="sh">Fundamentals</div>
+  <div class="data-wrap" id="d-fund"></div>
+  <div class="sh">Quality Metrics</div>
+  <div class="data-wrap" id="d-quality"></div>
+  <div class="sh">Ownership & Sentiment</div>
+  <div class="data-wrap" id="d-own"></div>
+  <div class="sh">Earnings Surprise — Last 4 Qtrs</div>
+  <div class="data-wrap" id="d-earnings"></div>
+  <div class="sh">Upgrade Momentum — Last 90d</div>
+  <div class="data-wrap" id="d-upgrades"></div>
+  <div class="btn-row">
+    <button class="btn bp" onclick="goTo(2)">Next: Chart Inputs →</button>
+    <button class="btn btn-sm" onclick="goTo(0)">← Back</button>
+  </div>
+</div>
+
+<!-- STEP 03: CHART INPUTS -->
+<div class="pg" id="p2">
+  <div class="box b"><div class="box-title">Chart-Only Inputs</div><div class="box-sub">Everything else was auto-fetched. These 3 numbers require your TOS chart.</div></div>
+
+  <div class="sh">Trend Strength — from TOS</div>
+  <div class="dg">
+    <div class="fg"><label class="lbl">ADX</label><input type="number" id="adx" placeholder="22" step="0.1"/></div>
+    <div class="fg"><label class="lbl">PDI (+DI)</label><input type="number" id="pdi" placeholder="28" step="0.1"/></div>
+  </div>
+  <div class="fg"><label class="lbl">NDI (−DI)</label><input type="number" id="ndi" placeholder="18" step="0.1"/></div>
+
+  <div class="sh">Key Price Levels — optional but recommended</div>
+  <div class="dg">
+    <div class="fg"><label class="lbl">Support 1 (CS1) $</label><input type="number" id="cs1" placeholder="0" step="0.01"/></div>
+    <div class="fg"><label class="lbl">Support 2 (CS2) $</label><input type="number" id="cs2" placeholder="0" step="0.01"/></div>
+  </div>
+  <div class="dg">
+    <div class="fg"><label class="lbl">Resistance 1 (CR1) $</label><input type="number" id="cr1" placeholder="0" step="0.01"/></div>
+    <div class="fg"><label class="lbl">Resistance 2 (CR2) $</label><input type="number" id="cr2" placeholder="0" step="0.01"/></div>
+  </div>
+  <div class="fg"><label class="lbl">Invalidation Level $</label><input type="number" id="inv" placeholder="0" step="0.01"/></div>
+  <div class="fg"><label class="lbl">ATR</label><input type="number" id="atr" placeholder="0" step="0.01"/></div>
+
+  <div class="sh">GC Scan — optional</div>
+  <div class="dg">
+    <div class="fg"><label class="lbl">GCScore6 <span class="hint">(0–6)</span></label><input type="number" id="gc6" placeholder="—" min="0" max="6"/></div>
+    <div class="fg"><label class="lbl">GCScore10 <span class="hint">(0–10)</span></label><input type="number" id="gc10" placeholder="—" min="0" max="10"/></div>
+  </div>
+  <div class="dg">
+    <div class="fg"><label class="lbl">GC_8EMA <span class="hint">(0–4)</span></label><input type="number" id="gc8" placeholder="—" min="0" max="4"/></div>
+    <div class="fg"><label class="lbl">GC_MACD <span class="hint">(0–5)</span></label><input type="number" id="gcM" placeholder="—" min="0" max="5"/></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn bp" onclick="goTo(3)">Next: Gate Evaluation →</button>
+    <button class="btn btn-sm" onclick="goTo(1)">← Back</button>
+  </div>
+</div>
+
+<!-- STEP 04: GATES -->
+<div class="pg" id="p3">
+  <div class="sh">Pre-Template Gates — Auto-Evaluated</div>
+  <div class="data-wrap" id="gateDisplay"></div>
+  <div class="divider"></div>
+  <div class="sh">Override Any Gate</div>
+  <div id="gateOverrides"></div>
+  <div class="btn-row">
+    <button class="btn bp" onclick="goTo(4)">Next: Phase 2 Score →</button>
+    <button class="btn btn-sm" onclick="goTo(2)">← Back</button>
+  </div>
+</div>
+
+<!-- STEP 05: PHASE 2 SCORE -->
+<div class="pg" id="p4">
+  <div class="sh" id="p2hdr">Phase 2 Scored Filter</div>
+  <div class="sh" style="color:var(--green);border-color:var(--green-border)">Auto-Scored from Data</div>
+  <div id="p2auto"></div>
+  <div class="divider"></div>
+  <div class="sh">Your Judgment Needed</div>
+  <div id="p2manual"></div>
+  <div id="p2scoreOut" style="display:none">
+    <div class="score-big">
+      <div class="score-num"><span id="rscore">0</span><span class="score-den" id="rmax">/12</span></div>
+      <div class="score-pct" id="rpct"></div>
+    </div>
+  </div>
+  <button class="btn bp" onclick="calcScore()">▶ Calculate Score</button>
+  <button class="btn btn-sm" style="margin-top:.5rem" onclick="goTo(3)">← Back</button>
+</div>
+
+<!-- STEP 06: RUN ANALYSIS -->
+<div class="pg" id="p5">
+  <div class="sh" id="outHdr">Ready to Run</div>
+  <div id="outVerdict"></div>
+  <div class="dg" style="margin:.875rem 0" id="outStats"></div>
+  <div class="data-wrap" id="outKeyData"></div>
+  <div id="outLayer3" style="margin-top:.75rem"></div>
+  <div id="outFlags" style="margin-top:.75rem"></div>
+
+  <div class="divider"></div>
+  <div class="box b">
+    <div class="box-title">Next Step — Run Full Template 1</div>
+    <div class="box-sub">Tap the button below. Claude will receive all fetched data and run the complete Template 1 v6.3 analysis — every section, every gate, all commentary. Paste your chart image in the chat after sending for the technical sections.</div>
+  </div>
+
+  <button class="send-btn" onclick="fireAnalysis()">▶▶ Run Full Template 1 Analysis in Claude →</button>
+  <button class="btn" style="margin-top:.5rem" onclick="newTicker()">← New Ticker</button>
+</div>
+
+<!-- STEP 06: SETTINGS -->
+<div class="pg" id="p6">
+  <div class="sh">API Configuration</div>
+  <div class="box b">
+    <div class="box-title">Anthropic API Key — Required</div>
+    <div class="box-sub">From console.anthropic.com → API Keys. Starts with sk-ant-<br>Saved to localStorage on this device.</div>
+  </div>
+  <div class="fg" style="margin-top:.75rem">
+    <label class="lbl">Anthropic API Key</label>
+    <input type="password" id="anthropicKey" placeholder="sk-ant-api03-..." />
+  </div>
+  <div class="box n" style="margin-top:.5rem">
+    <div class="box-title">Finnhub API Key — Optional</div>
+    <div class="box-sub">Improves data quality. Free at finnhub.io. Starts with pk_</div>
+  </div>
+  <div class="fg" style="margin-top:.75rem">
+    <label class="lbl">Finnhub API Key</label>
+    <input type="password" id="finnhubKey" placeholder="pk_..." />
+  </div>
+  <div class="btn-row">
+    <button class="btn bp btn-sm" onclick="saveKeys()">Save Keys</button>
+    <button class="btn btn-sm" onclick="goTo(0)">Back</button>
+  </div>
+  <div id="saveStatus" style="margin-top:.75rem"></div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+var D={
+  ticker:'',bucket:'swing',
+  anthropicKey:'',finnhubKey:'',
+  price:0,changePct:0,marketCap:'',week52High:0,week52Low:0,
+  name:'',sector:'',
+  analystAvg:0,analystHigh:0,analystLow:0,numAnalysts:0,consensus:'',
+  upsidePct:0,upsideTier:'',
+  pe:0,fwdPE:0,eps:0,peg:0,
+  debtEq:0,grossMargin:0,opMargin:0,netMargin:0,
+  revGrowth:0,revCagr3:0,revCagr5:0,
+  roic:0,roe:0,roa:0,fcfYield:0,
+  instOwnTrend:'',shortFloat:0,instOwn:0,
+  earnings:[],upgrades:[],netUpgrades:0,
+  gates:{},p2scores:{},
+  rawScore:0,maxScore:12,pct:0,thresh:73
+};
+
+function loadKeys(){
+  try{
+    var ak=localStorage.getItem('gogodc_ak');
+    var fk=localStorage.getItem('gogodc_fk');
+    if(ak){D.anthropicKey=ak;document.getElementById('anthropicKey').value=ak;}
+    if(fk){D.finnhubKey=fk;document.getElementById('finnhubKey').value=fk;}
+  }catch(e){}
+}
+
+function saveKeys(){
+  D.anthropicKey=document.getElementById('anthropicKey').value.trim();
+  D.finnhubKey=document.getElementById('finnhubKey').value.trim();
+  try{
+    if(D.anthropicKey)localStorage.setItem('gogodc_ak',D.anthropicKey);
+    if(D.finnhubKey)localStorage.setItem('gogodc_fk',D.finnhubKey);
+  }catch(e){}
+  var ok=D.anthropicKey.startsWith('sk-ant-');
+  document.getElementById('saveStatus').innerHTML=ok
+    ?'<div class="box g"><div class="box-title">Keys saved — ready to fetch</div></div>'
+    :'<div class="box r"><div class="box-title">Anthropic key should start with sk-ant-</div></div>';
+  if(ok)setTimeout(function(){goTo(0);},700);
+}
+
+function goTo(n){
+  document.querySelectorAll('.pg').forEach(function(p,i){p.classList.toggle('on',i===n)});
+  document.querySelectorAll('.step').forEach(function(t,i){t.classList.toggle('on',i===n)});
+  if(n===0)checkKeyWarn();
+  if(n===1)renderData();
+  if(n===3)renderGates();
+  if(n===4)renderP2();
+  if(n===5)renderOutput();
+}
+
+function setBucket(b){
+  D.bucket=b;
+  document.querySelectorAll('#bpick .tb').forEach(function(btn,i){btn.classList.toggle('sel',['swing','value','lt'][i]===b)});
+}
+
+function checkKeyWarn(){
+  var w=document.getElementById('keyWarn');
+  if(!w)return;
+  w.innerHTML=D.anthropicKey
+    ?'<div class="box g" style="margin-bottom:.75rem"><div class="box-title">API Key Set — Ready</div></div>'
+    :'<div class="box y" style="margin-bottom:.75rem"><div class="box-title">Anthropic API Key Required</div><div class="box-sub">Tap ⚙ Keys above → paste your key from console.anthropic.com</div></div>';
+}
+
+function setProgress(pct,msg){
+  document.getElementById('progWrap').style.display='block';
+  document.getElementById('progBar').style.width=pct+'%';
+  if(msg)document.getElementById('fetchMsg').innerHTML='<div class="loading"><span class="spin">⟳</span>'+msg+'</div>';
+}
+
+async function fetchData(){
+  var t=document.getElementById('ticker').value.trim().toUpperCase();
+  if(!t){document.getElementById('fetchMsg').innerHTML='<div class="box r"><div class="box-title">Enter a ticker first</div></div>';return;}
+  if(!D.anthropicKey){document.getElementById('fetchMsg').innerHTML='<div class="box r"><div class="box-title">Add Anthropic API key in ⚙ Keys first</div></div>';return;}
+  D.ticker=t;
+  document.getElementById('fetchMsg').innerHTML='';
+  setProgress(15,'Fetching data for '+t+'...');
+  try{
+    await callClaude(t);
+    setProgress(100,'');
+    document.getElementById('progWrap').style.display='none';
+    document.getElementById('fetchMsg').innerHTML='';
+    calcDerived();
+    goTo(1);
+  }catch(e){
+    document.getElementById('progWrap').style.display='none';
+    document.getElementById('fetchMsg').innerHTML='<div class="box r"><div class="box-title">Fetch failed</div><div class="box-sub">'+e.message+'</div></div>';
+  }
+}
+
+async function callClaude(t){
+  var fh=D.finnhubKey?'Finnhub key available: '+D.finnhubKey+'. Use Finnhub endpoints for '+t+' where possible. ':'';
+  var prompt=fh+'Search the web for current financial data for US stock '+t+'. Return ONLY a JSON object, no markdown, no backticks, starting with { ending with }. Required keys: name, price, changePct, marketCap, sector, week52High, week52Low, analystAvg, analystHigh, analystLow, numAnalysts, consensus, pe, fwdPE, eps, peg, debtEq, grossMargin, opMargin, netMargin, revGrowth, revCagr3, revCagr5, roic, roe, roa, fcfYield, shortFloat, instOwn, instOwnTrend, earnings (array of last 4 quarters: [{period,estimate,actual,surprisePct}]), upgrades (array of last 5 analyst actions: [{date,firm,action,toGrade}]), netUpgrades90d. Use 0 for missing numbers, empty string for missing strings.';
+
+  var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':D.anthropicKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:2000,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      system:'You are a financial data assistant. Respond ONLY with a valid JSON object. No markdown. No text before or after. Just raw JSON.',
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+
+  if(!resp.ok){
+    var et=await resp.text();
+    var eo={};try{eo=JSON.parse(et);}catch(x){}
+    throw new Error((eo.error&&eo.error.message)||('HTTP '+resp.status));
+  }
+  var data=await resp.json();
+  var text='';
+  if(data.content)data.content.forEach(function(b){if(b.type==='text')text+=b.text;});
+  if(!text)throw new Error('Empty response');
+  text=text.replace(/```json|```/g,'').trim();
+  var s=text.indexOf('{'),e=text.lastIndexOf('}');
+  if(s<0||e<0)throw new Error('No JSON found: '+text.slice(0,150));
+  var p=JSON.parse(text.slice(s,e+1));
+  D.name=p.name||t;D.price=+p.price||0;D.changePct=+p.changePct||0;
+  D.marketCap=p.marketCap||'';D.sector=p.sector||'';
+  D.week52High=+p.week52High||0;D.week52Low=+p.week52Low||0;
+  D.analystAvg=+p.analystAvg||0;D.analystHigh=+p.analystHigh||0;
+  D.analystLow=+p.analystLow||0;D.numAnalysts=+p.numAnalysts||0;
+  D.consensus=p.consensus||'';
+  D.pe=+p.pe||0;D.fwdPE=+p.fwdPE||0;D.eps=+p.eps||0;D.peg=+p.peg||0;
+  D.debtEq=+p.debtEq||0;D.grossMargin=+p.grossMargin||0;
+  D.opMargin=+p.opMargin||0;D.netMargin=+p.netMargin||0;
+  D.revGrowth=+p.revGrowth||0;D.revCagr3=+p.revCagr3||0;D.revCagr5=+p.revCagr5||0;
+  D.roic=+p.roic||0;D.roe=+p.roe||0;D.roa=+p.roa||0;D.fcfYield=+p.fcfYield||0;
+  D.shortFloat=+p.shortFloat||0;D.instOwn=+p.instOwn||0;
+  D.instOwnTrend=p.instOwnTrend||'';
+  D.earnings=Array.isArray(p.earnings)?p.earnings:[];
+  D.upgrades=Array.isArray(p.upgrades)?p.upgrades:[];
+  D.netUpgrades=+p.netUpgrades90d||0;
+}
+
+function calcDerived(){
+  if(D.analystAvg>0&&D.price>0){
+    D.upsidePct=Math.round(((D.analystAvg-D.price)/D.price)*100);
+    D.upsideTier=D.upsidePct>=20?'green':D.upsidePct>=15?'yellow':D.upsidePct>=10?'orange':'red';
+  }
+  if(!D.peg&&D.pe>0&&D.revGrowth>0)D.peg=+(D.pe/D.revGrowth).toFixed(2);
+}
+
+function f(v,pre,suf,dec){if(!v&&v!==0)return'—';dec=dec===undefined?1:dec;return(pre||'')+(+v).toFixed(dec)+(suf||'');}
+function cc(v,g,w){return v>=g?'g':v>=w?'y':'r';}
+function rb(id,rows){var el=document.getElementById(id);if(!el)return;el.innerHTML=rows.map(function(r){return'<div class="dr"><span class="dk">'+r[0]+'</span><span class="dv '+(r[2]||'')+'">'+r[1]+'</span></div>';}).join('');}
+
+function renderData(){
+  var up=D.upsidePct,uc=up>=20?'g':up>=10?'y':'r';
+  rb('d-price',[
+    ['Company',D.name||D.ticker,'b'],
+    ['Price','$'+D.price.toFixed(2)+' ('+(D.changePct>=0?'+':'')+D.changePct.toFixed(2)+'%)',D.changePct>=0?'g':'r'],
+    ['Market Cap',D.marketCap||'—'],
+    ['52-Week','$'+D.week52Low+' – $'+D.week52High],
+    ['Sector',D.sector||'—']
+  ]);
+  rb('d-analyst',[
+    ['Avg Target / Upside','$'+D.analystAvg.toFixed(2)+' ('+up+'%)',uc],
+    ['High / Low','$'+D.analystHigh.toFixed(2)+' / $'+D.analystLow.toFixed(2)],
+    ['Analysts / Consensus',D.numAnalysts+' / '+(D.consensus||'—')],
+    ['Upside Tier',D.upsideTier==='green'?'🟢 ≥20% FULL PROCEED':D.upsideTier==='yellow'?'🟡 15–19% CONDITIONAL':D.upsideTier==='orange'?'🟠 10–14% REDUCE':'🔴 <10% KILL',D.upsideTier==='green'?'g':D.upsideTier==='yellow'||D.upsideTier==='orange'?'y':'r']
+  ]);
+  rb('d-fund',[
+    ['Rev Growth YoY',f(D.revGrowth,'','%'),cc(D.revGrowth,15,5)],
+    ['Rev CAGR 3yr',f(D.revCagr3,'','%'),cc(D.revCagr3,12,3)],
+    ['Rev CAGR 5yr',f(D.revCagr5,'','%'),cc(D.revCagr5,10,2)],
+    ['Gross Margin',f(D.grossMargin,'','%'),cc(D.grossMargin,40,20)],
+    ['Op Margin',f(D.opMargin,'','%'),cc(D.opMargin,15,5)],
+    ['Net Margin',f(D.netMargin,'','%'),cc(D.netMargin,10,3)],
+    ['P/E TTM / Fwd P/E',f(D.pe,'','',1)+' / '+f(D.fwdPE,'','',1)],
+    ['EPS TTM','$'+f(D.eps,'','',2)],
+    ['PEG',f(D.peg,'','',2),D.peg>2?'r':D.peg>1?'y':'g'],
+    ['Debt / Equity',f(D.debtEq,'','',2),D.debtEq>1?'r':D.debtEq>0.5?'y':'g']
+  ]);
+  rb('d-quality',[
+    ['ROIC',f(D.roic,'','%'),cc(D.roic,15,10)],
+    ['ROE',f(D.roe,'','%'),cc(D.roe,15,10)],
+    ['ROA',f(D.roa,'','%'),cc(D.roa,10,5)],
+    ['FCF Yield',f(D.fcfYield,'','%')]
+  ]);
+  rb('d-own',[
+    ['Inst. Ownership',f(D.instOwn,'','%')],
+    ['Inst. Trend',D.instOwnTrend||'—',D.instOwnTrend==='Increasing'?'g':D.instOwnTrend==='Decreasing'?'r':''],
+    ['Short Float',f(D.shortFloat,'','%'),D.shortFloat>15?'r':D.shortFloat>8?'y':'g']
+  ]);
+  var eb='';
+  if(D.earnings&&D.earnings.length){
+    var beats=0,misses=0;
+    D.earnings.forEach(function(e,i){
+      var hit=+e.actual>+e.estimate;
+      if(hit)beats++;else misses++;
+      eb+='<div class="dr"><span class="dk">'+(e.period||'Q'+(i+1))+'</span><span class="dv '+(hit?'g':'r')+'">$'+f(e.actual,'','',2)+' vs $'+f(e.estimate,'','',2)+(e.surprisePct?' ('+(+e.surprisePct>0?'+':'')+f(e.surprisePct,'','',1)+'%)':'')+'</span></div>';
+    });
+    eb+='<div class="dr"><span class="dk">Beat / Miss Streak</span><span class="dv '+(beats>=3?'g':misses>=3?'r':'y')+'">Beat '+beats+' / Miss '+misses+'</span></div>';
+  }else eb='<div class="dr"><span class="dk">No earnings data fetched</span></div>';
+  document.getElementById('d-earnings').innerHTML=eb;
+  var ub='<div class="dr"><span class="dk">Net Upgrades 90d</span><span class="dv '+(D.netUpgrades>0?'g':D.netUpgrades<0?'r':'y')+'">'+(D.netUpgrades>0?'+':'')+D.netUpgrades+'</span></div>';
+  if(D.upgrades&&D.upgrades.length)D.upgrades.slice(0,4).forEach(function(u){ub+='<div class="dr"><span class="dk">'+(u.date||'')+' '+(u.firm||'')+'</span><span class="dv">'+(u.action||'')+' → '+(u.toGrade||'')+'</span></div>';});
+  document.getElementById('d-upgrades').innerHTML=ub;
+}
+
+function renderGates(){
+  var adx=parseFloat(document.getElementById('adx').value)||0;
+  var pdi=parseFloat(document.getElementById('pdi').value)||0;
+  var ndi=parseFloat(document.getElementById('ndi').value)||0;
+  var up=D.upsidePct;
+  var gates=[
+    {id:'ga',label:'Analyst upside floor',sub:up+'% upside to avg target',auto:D.bucket==='swing'?up>=15:up>=10,detail:D.bucket==='swing'?'Swing requires ≥15%':'Value/LT requires ≥10%'},
+    {id:'gb',label:'Below highest analyst target',sub:'$'+D.price.toFixed(2)+' vs high $'+D.analystHigh.toFixed(2),auto:D.price>0&&D.analystHigh>0&&D.price<D.analystHigh,detail:'Hard kill if at or above highest target'},
+    {id:'gc',label:'Revenue CAGR positive',sub:'3yr: '+D.revCagr3.toFixed(1)+'%  YoY: '+D.revGrowth.toFixed(1)+'%',auto:D.revCagr3>0&&D.revGrowth>-10,detail:'Negative 3yr CAGR = deterioration flag'},
+    {id:'gd',label:'PEG ratio',sub:'PEG = '+D.peg.toFixed(2),auto:D.peg===0||D.peg<2,detail:'PEG >2.0 triggers 40–60% size cap at Sec 12'},
+    {id:'ge',label:'Balance sheet',sub:'D/E = '+D.debtEq.toFixed(2),auto:D.debtEq<1.5,detail:'D/E >1.5 = balance sheet risk flag'},
+    {id:'gf',label:'ADX / Trend gate'+(D.bucket!=='swing'?' (N/A)':''),sub:'ADX '+adx+'  PDI '+pdi+' / NDI '+ndi,auto:D.bucket!=='swing'||(adx>=20&&pdi>=ndi),detail:'Swing: ADX ≥20 + PDI>NDI required'},
+    {id:'gg',label:'Analyst upgrade momentum',sub:'Net 90d: '+(D.netUpgrades>0?'+':'')+D.netUpgrades,auto:D.netUpgrades>=0,detail:'Net negative = institutional exit signal'},
+    {id:'gh',label:'Short interest',sub:D.shortFloat.toFixed(1)+'% of float',auto:D.shortFloat<20,detail:'>20% = elevated squeeze / exit risk'}
+  ];
+  var html='',ov='';
+  gates.forEach(function(g){
+    var pass=D.gates[g.id]!==undefined?D.gates[g.id]:g.auto;
+    html+='<div class="gr"><div class="gt"><div class="gt-label">'+g.label+'</div><div class="gt-sub">'+g.sub+'</div></div><span class="gb '+(pass?'pass':'fail')+'">'+(pass?'PASS':'FLAG')+'</span></div>';
+    var op=D.gates[g.id],pp=op===true?' xp':'',pf=op===false?' xf':'';
+    ov+='<div class="trow"><div style="flex:1"><div class="tl">'+g.label+'</div><div class="ts">'+g.detail+'</div></div><div class="tbs"><button class="xb'+pp+'" onclick="ovGate(\''+g.id+'\',true)">PASS</button><button class="xb'+pf+'" onclick="ovGate(\''+g.id+'\',false)">FLAG</button></div></div>';
+  });
+  document.getElementById('gateDisplay').innerHTML=html;
+  document.getElementById('gateOverrides').innerHTML=ov;
+}
+function ovGate(id,v){D.gates[id]=v;renderGates();}
+
+var P2={
+  swing:[
+    {k:'c1',lbl:'Sector / Theme Strength',max:2,auto:null,opts:[['2','Top-tier — AI/defense/energy/semis'],['1','Mid-tier / recovering'],['0','Weak / no tailwind']]},
+    {k:'c2',lbl:'Technical Structure',max:2,auto:null,opts:[['2','Above 21/50 EMA — HH/HL confirmed'],['1','Reclaiming MAs / base forming'],['0','Below MAs / breakdown']]},
+    {k:'c3',lbl:'Entry Location',max:2,auto:null,opts:[['2','Near zone — not extended'],['1','Somewhat extended'],['0','FOMO / no zone']]},
+    {k:'c4',lbl:'Catalyst (0–30d)',max:1,auto:null,opts:[['1','Named and dated'],['0','None']]},
+    {k:'c5',lbl:'R:R ≥ 2.5:1',max:1,auto:null,opts:[['1','Meets threshold'],['0','Below']]},
+    {k:'c6',lbl:'Analyst Upside Tier',max:1,auto:function(){return D.upsidePct>=20?1:D.upsidePct>=15?0.5:0;},opts:[['1','≥20% or 15–19% all conditions met'],['0.5','15–19% missing one condition'],['0','10–14% (pre-capped 40%)']]},
+    {k:'c7',lbl:'Fundamentals Quality',max:1,auto:function(){return(D.roic>10&&D.debtEq<1&&D.revGrowth>0)?1:(D.revGrowth<-10?0:null);},opts:[['1','Clean — ROIC >10% — no stress'],['0','Broken / extreme valuation']]},
+    {k:'c8',lbl:'Macro Fit',max:1,auto:null,opts:[['1','Strong fit with current macro regime'],['0','Macro headwinds']]},
+    {k:'c9s',lbl:'Sympathy Play',max:1,auto:function(){return 0;},opts:[['1','Clear — named breakout stock'],['0.5','Possible but fading'],['0','None']]}
+  ],
+  value:[
+    {k:'c1',lbl:'Sector / Theme Strength',max:2,auto:null,opts:[['2','Top-tier'],['1','Mid-tier'],['0','Weak']]},
+    {k:'c2',lbl:'Technical Structure',max:1,auto:null,opts:[['1','Constructive base forming'],['0','Breakdown']]},
+    {k:'c3',lbl:'Entry Location',max:2,auto:null,opts:[['2','Near zone'],['1','Extended'],['0','No zone']]},
+    {k:'c4',lbl:'Catalyst (0–90d)',max:1,auto:null,opts:[['1','Named and dated'],['0','None']]},
+    {k:'c5',lbl:'R:R ≥ 2:1',max:1,auto:null,opts:[['1','Meets threshold'],['0','Below']]},
+    {k:'c6',lbl:'Analyst Upside',max:1,auto:function(){return D.upsidePct>=20?1:D.upsidePct>=15?0.5:0;},opts:[['1','≥20%'],['0.5','15–19%'],['0','10–14%']]},
+    {k:'c7',lbl:'Fundamentals',max:2,auto:function(){var s=0;if(D.roic>10)s++;if(D.revCagr3>5)s++;if(D.debtEq<1)s++;return Math.min(2,Math.round(s*0.8));},opts:[['2','Clean + improving + ROIC >10%'],['1','Minor concerns'],['0','Broken']]},
+    {k:'c8',lbl:'Macro Fit',max:1,auto:null,opts:[['1','Strong fit'],['0','Headwinds']]},
+    {k:'c9s',lbl:'Sympathy Play',max:1,auto:function(){return 0;},opts:[['1','Clear'],['0.5','Possible'],['0','None']]}
+  ],
+  lt:[
+    {k:'c1',lbl:'Sector / Theme Strength',max:1,auto:null,opts:[['1','Top-tier leadership theme'],['0','Weak']]},
+    {k:'c4',lbl:'Long-Term Catalyst',max:1,auto:null,opts:[['1','Identified'],['0','None']]},
+    {k:'c7',lbl:'Fundamental Quality',max:2,auto:function(){var s=0;if(D.roic>10)s++;if(D.revCagr5>8)s++;if(D.debtEq<0.5)s++;return Math.min(2,Math.round(s*0.75));},opts:[['2','Clean + ROIC >10% + strong CAGR'],['1','Acceptable'],['0','Broken']]},
+    {k:'c8',lbl:'Macro Fit',max:1,auto:null,opts:[['1','Tailwind / rotation expected'],['0','Structural headwind']]},
+    {k:'c9',lbl:'Moat Score',max:2,auto:null,opts:[['2','Wide moat — multiple advantages'],['1','Narrow moat — one clear advantage'],['0','No identifiable moat']]},
+    {k:'c10',lbl:'TAM / Growth Runway',max:2,auto:null,opts:[['2','Large expanding TAM — well positioned'],['1','Moderate or uncertain'],['0','Flat / shrinking']]},
+    {k:'c11',lbl:'DCF Margin of Safety',max:2,auto:null,opts:[['2','Base DCF ≥30% upside'],['1','Base DCF 15–29%'],['0','<15% or above fair value']]},
+    {k:'c12',lbl:'Institutional Ownership',max:1,auto:function(){return D.instOwnTrend==='Increasing'?1:D.instOwnTrend==='Decreasing'?0:0.5;},opts:[['1','Increasing last 2–3 quarters'],['0.5','Stable'],['0','Declining / rising shorts']]}
+  ]
+};
+
+function renderP2(){
+  var cats=P2[D.bucket]||[];
+  var mx={swing:12,value:10,lt:12},th={swing:73,value:70,lt:75};
+  D.maxScore=mx[D.bucket];D.thresh=th[D.bucket];
+  document.getElementById('p2hdr').textContent='Phase 2 — Need '+D.thresh+'%+ of '+D.maxScore+' Points';
+  var ah='',mh='';
+  cats.forEach(function(c){
+    var av=c.auto?c.auto():null;
+    if(av!==null&&D.p2scores[c.k]===undefined)D.p2scores[c.k]=av;
+    var cur=D.p2scores[c.k];
+    var sel='<select onchange="setP2(\''+c.k+'\',this.value)" style="font-size:13px"><option value="">— select —</option>';
+    c.opts.forEach(function(o){sel+='<option value="'+o[0]+'"'+(cur!=null&&cur==parseFloat(o[0])?' selected':'')+'>'+o[0]+' — '+o[1]+'</option>';});
+    sel+='</select>';
+    var row='<div class="fg"><label class="lbl">'+c.lbl+' <span class="hint">max '+c.max+' pt</span></label>'+sel+'</div>';
+    if(c.auto!==null)ah+=row;else mh+=row;
+  });
+  document.getElementById('p2auto').innerHTML=ah||'<div style="font-size:11px;color:var(--text3);padding:.5rem 0">None for this bucket</div>';
+  document.getElementById('p2manual').innerHTML=mh;
+  document.getElementById('p2scoreOut').style.display='none';
+}
+function setP2(k,v){D.p2scores[k]=v===''?null:parseFloat(v);}
+
+function calcScore(){
+  var cats=P2[D.bucket]||[],raw=0;
+  cats.forEach(function(c){if(D.p2scores[c.k]!=null)raw+=D.p2scores[c.k];});
+  raw=Math.round(raw*10)/10;
+  var pct=Math.round((raw/D.maxScore)*100);
+  D.rawScore=raw;D.pct=pct;
+  document.getElementById('rscore').textContent=raw;
+  document.getElementById('rmax').textContent='/'+D.maxScore;
+  document.getElementById('rpct').textContent=pct+'%  —  need '+D.thresh+'%  —  '+(pct>=D.thresh?'✓ PASS':'✗ FAIL');
+  document.getElementById('p2scoreOut').style.display='block';
+  if(pct>=D.thresh)setTimeout(function(){goTo(5);},900);
+}
+
+function renderOutput(){
+  var up=D.upsidePct;
+  var adx=parseFloat(document.getElementById('adx').value)||0;
+  var pdi=parseFloat(document.getElementById('pdi').value)||0;
+  var ndi=parseFloat(document.getElementById('ndi').value)||0;
+  var bL=D.bucket==='swing'?'🟢 SWING 1–3mo':D.bucket==='value'?'🔵 VALUE 6–12mo':'🟣 LONG-TERM 5–10yr';
+  document.getElementById('outHdr').textContent=D.ticker+(D.name&&D.name!==D.ticker?' — '+D.name:'')+' — '+bL;
+  var p=D.pct,lbl,cls;
+  if(p>=90){lbl='⭐ EXECUTE NOW — Run Full Template 1';cls='g';}
+  else if(p>=75){lbl='📋 CHART CONFIRM FIRST';cls='g';}
+  else if(p>=60){lbl='👁 WATCHLIST';cls='y';}
+  else if(p>=45){lbl='⏳ RECLASSIFY OR SKIP';cls='y';}
+  else{lbl='❌ REJECT';cls='r';}
+  document.getElementById('outVerdict').innerHTML='<div class="box '+cls+'"><div class="box-title">'+lbl+'</div><div class="box-sub">Score: '+D.rawScore+'/'+D.maxScore+' ('+D.pct+'%)  —  threshold '+D.thresh+'%</div></div>';
+  var sc='<div class="sc"><div class="sc-label">Score</div><div class="sc-val">'+D.rawScore+'<span style="font-size:13px;color:var(--text3)">/'+D.maxScore+'</span></div></div>';
+  sc+='<div class="sc"><div class="sc-label">Pct</div><div class="sc-val">'+D.pct+'%</div></div>';
+  sc+='<div class="sc"><div class="sc-label">Price</div><div class="sc-val">$'+D.price.toFixed(2)+'</div></div>';
+  sc+='<div class="sc"><div class="sc-label">Upside</div><div class="sc-val" style="color:'+(up>=15?'var(--green)':up>=10?'var(--yellow)':'var(--red)')+'">'+up+'%</div></div>';
+  document.getElementById('outStats').innerHTML=sc;
+  var kd='';
+  kd+='<div class="dr"><span class="dk">Analyst Avg / High</span><span class="dv b">$'+D.analystAvg+' / $'+D.analystHigh+'</span></div>';
+  kd+='<div class="dr"><span class="dk">Rev CAGR 3yr / 5yr</span><span class="dv">'+D.revCagr3.toFixed(1)+'% / '+D.revCagr5.toFixed(1)+'%</span></div>';
+  kd+='<div class="dr"><span class="dk">ROIC / ROE / ROA</span><span class="dv">'+D.roic.toFixed(1)+'% / '+D.roe.toFixed(1)+'% / '+D.roa.toFixed(1)+'%</span></div>';
+  kd+='<div class="dr"><span class="dk">Margins G/O/N</span><span class="dv">'+D.grossMargin.toFixed(1)+'% / '+D.opMargin.toFixed(1)+'% / '+D.netMargin.toFixed(1)+'%</span></div>';
+  kd+='<div class="dr"><span class="dk">PEG / D/E</span><span class="dv">'+D.peg.toFixed(2)+' / '+D.debtEq.toFixed(2)+'</span></div>';
+  kd+='<div class="dr"><span class="dk">Net Upgrades 90d</span><span class="dv '+(D.netUpgrades>0?'g':D.netUpgrades<0?'r':'y')+'">'+(D.netUpgrades>0?'+':'')+D.netUpgrades+'</span></div>';
+  document.getElementById('outKeyData').innerHTML=kd;
+  var adxOk=D.bucket!=='swing'||(adx>=20&&pdi>=ndi);
+  var g1=D.revCagr3>0&&D.netMargin>-20,g2=adxOk&&D.debtEq<1.5&&D.shortFloat<20;
+  var l3='<div class="sh">Layer 3 Gate Preview</div><div class="data-wrap">';
+  l3+='<div class="gr"><div class="gt"><div class="gt-label">Gate 1 — Fundamentals Trend</div></div><span class="gb '+(g1?'pass':'warn')+'">'+(g1?'CLEAR':'REVIEW')+'</span></div>';
+  l3+='<div class="gr"><div class="gt"><div class="gt-label">Gate 2 — Safety Flags</div></div><span class="gb '+(g2?'pass':'warn')+'">'+(g2?'CLEAR':'REVIEW')+'</span></div>';
+  l3+='<div class="gr"><div class="gt"><div class="gt-label">Gate 3 — Catalyst / Binary Risk</div></div><span class="gb na">T1 SEC 13</span></div>';
+  l3+='</div>';
+  document.getElementById('outLayer3').innerHTML=l3;
+  var flags=[];
+  if(up>=15&&up<20)flags.push({c:'y',t:'15–19% conditional — confirm 3 conditions in T1 Sec 10'});
+  if(up>=10&&up<15)flags.push({c:'y',t:'10–14% hard reduce — 40% cap applies in T1 Sec 12'});
+  if(up<10&&up>-99)flags.push({c:'r',t:'Upside <10% — hard kill in T1 Sec 10'});
+  if(D.peg>2&&D.peg>0)flags.push({c:'y',t:'PEG >2.0 — 40–60% size cap in T1 Sec 12'});
+  if(!adxOk&&D.bucket==='swing')flags.push({c:'y',t:'NDI>PDI — check CHoCH in T1 Sec 5B'});
+  if(D.revCagr3<0)flags.push({c:'r',t:'Negative 3yr Revenue CAGR — deterioration flag'});
+  if(D.instOwnTrend==='Decreasing')flags.push({c:'r',t:'Institutional ownership declining — Layer 3 Gate 2'});
+  if(D.netUpgrades<0)flags.push({c:'r',t:'Net downgrades 90d — institutional exit signal'});
+  if(D.bucket==='lt')flags.push({c:'n',t:'Long-Term — T1 requires Sec 8C / 8D / 21 / 22 / 23'});
+  if(flags.length){
+    var fh='<div class="sh">Active Flags</div><div class="data-wrap">';
+    flags.forEach(function(fl){fh+='<div class="flag-row"><span class="chip '+fl.c+'">'+fl.c.toUpperCase()+'</span>'+fl.t+'</div>';});
+    fh+='</div>';
+    document.getElementById('outFlags').innerHTML=fh;
+  }else document.getElementById('outFlags').innerHTML='';
+}
+
+function buildPrompt(){
+  var adx=document.getElementById('adx').value||'not provided';
+  var pdi=document.getElementById('pdi').value||'not provided';
+  var ndi=document.getElementById('ndi').value||'not provided';
+  var cs1=document.getElementById('cs1').value;
+  var cs2=document.getElementById('cs2').value;
+  var cr1=document.getElementById('cr1').value;
+  var cr2=document.getElementById('cr2').value;
+  var inv=document.getElementById('inv').value;
+  var atr=document.getElementById('atr').value;
+  var gc6=document.getElementById('gc6').value;
+  var gc10=document.getElementById('gc10').value;
+  var gc8=document.getElementById('gc8').value;
+  var gcM=document.getElementById('gcM').value;
+
+  var msg='Run a complete Template 1 v6.3 analysis for '+D.ticker+'.\n\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='PRE-TEMPLATE RESULTS\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='Bucket: '+(D.bucket==='swing'?'🟢 SWING 1–3mo':D.bucket==='value'?'🔵 VALUE 6–12mo':'🟣 LONG-TERM 5–10yr')+'\n';
+  msg+='Phase 2 Score: '+D.rawScore+'/'+D.maxScore+' ('+D.pct+'%) — threshold '+D.thresh+'%\n\n';
+
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='FETCHED MARKET DATA\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='Company: '+D.name+'\n';
+  msg+='Price: $'+D.price.toFixed(2)+' ('+D.changePct.toFixed(2)+'% today)\n';
+  msg+='Market Cap: '+D.marketCap+'\n';
+  msg+='Sector: '+D.sector+'\n';
+  msg+='52-Week: $'+D.week52Low+' – $'+D.week52High+'\n\n';
+
+  msg+='ANALYST TARGETS\n';
+  msg+='Avg: $'+D.analystAvg+' ('+D.upsidePct+'% upside) | High: $'+D.analystHigh+' | Low: $'+D.analystLow+'\n';
+  msg+='Analysts: '+D.numAnalysts+' | Consensus: '+D.consensus+'\n';
+  msg+='Net Upgrades 90d: '+(D.netUpgrades>0?'+':'')+D.netUpgrades+'\n\n';
+
+  msg+='FUNDAMENTALS\n';
+  msg+='Rev Growth YoY: '+D.revGrowth.toFixed(1)+'%\n';
+  msg+='Rev CAGR 3yr: '+D.revCagr3.toFixed(1)+'% | 5yr: '+D.revCagr5.toFixed(1)+'%\n';
+  msg+='Gross Margin: '+D.grossMargin.toFixed(1)+'% | Op Margin: '+D.opMargin.toFixed(1)+'% | Net Margin: '+D.netMargin.toFixed(1)+'%\n';
+  msg+='P/E TTM: '+D.pe.toFixed(1)+' | Fwd P/E: '+D.fwdPE.toFixed(1)+' | EPS: $'+D.eps.toFixed(2)+' | PEG: '+D.peg.toFixed(2)+'\n';
+  msg+='Debt/Equity: '+D.debtEq.toFixed(2)+'\n';
+  msg+='ROIC: '+D.roic.toFixed(1)+'% | ROE: '+D.roe.toFixed(1)+'% | ROA: '+D.roa.toFixed(1)+'%\n';
+  msg+='FCF Yield: '+D.fcfYield.toFixed(1)+'%\n';
+  msg+='Short Float: '+D.shortFloat.toFixed(1)+'% | Inst. Ownership: '+D.instOwn.toFixed(1)+'% ('+D.instOwnTrend+')\n\n';
+
+  if(D.earnings&&D.earnings.length){
+    msg+='EARNINGS SURPRISE HISTORY\n';
+    D.earnings.forEach(function(e){
+      var hit=+e.actual>+e.estimate;
+      msg+=e.period+': $'+e.actual+' actual vs $'+e.estimate+' est '+(hit?'✓ BEAT':'✗ MISS')+(e.surprisePct?' ('+e.surprisePct+'%)':'')+'\n';
+    });
+    msg+='\n';
+  }
+
+  if(D.upgrades&&D.upgrades.length){
+    msg+='RECENT ANALYST ACTIONS\n';
+    D.upgrades.slice(0,5).forEach(function(u){msg+=(u.date||'')+' | '+(u.firm||'')+' | '+(u.action||'')+' → '+(u.toGrade||'')+'\n';});
+    msg+='\n';
+  }
+
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='CHART INPUTS (from TOS)\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='ADX: '+adx+' | PDI: '+pdi+' | NDI: '+ndi+'\n';
+  if(atr)msg+='ATR: $'+atr+'\n';
+  if(cs1)msg+='Support CS1: $'+cs1;
+  if(cs2)msg+=' | CS2: $'+cs2;
+  if(cs1||cs2)msg+='\n';
+  if(cr1)msg+='Resistance CR1: $'+cr1;
+  if(cr2)msg+=' | CR2: $'+cr2;
+  if(cr1||cr2)msg+='\n';
+  if(inv)msg+='Invalidation Level: $'+inv+'\n';
+  if(gc6)msg+='GCScore6: '+gc6+' | GC_8EMA: '+(gc8||'—')+' | GC_MACD: '+(gcM||'—')+' | GCScore10: '+(gc10||'—')+'\n';
+
+  msg+='\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='Please run the complete Template 1 v6.3 analysis covering all applicable sections for the '+D.bucket.toUpperCase()+' bucket. Include all gate evaluations, commentary, rule boxes, and the final scorecard. After the analysis I will paste a chart screenshot for the technical sections if needed.';
+  return msg;
+}
+
+function fireAnalysis(){
+  var msg=buildPrompt();
+  // Copy to clipboard and open Claude
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg).then(function(){
+      showCopied();
+    }).catch(function(){
+      showFallback(msg);
+    });
+  }else{
+    showFallback(msg);
+  }
+}
+
+function showCopied(){
+  var el=document.querySelector('.send-btn');
+  el.textContent='✓ Copied — paste into Claude chat now';
+  el.style.background='var(--green-bg)';
+  el.style.borderColor='var(--green-border)';
+  setTimeout(function(){
+    el.textContent='▶▶ Run Full Template 1 Analysis in Claude →';
+    el.style.background='';
+    el.style.borderColor='';
+  },3000);
+}
+
+function showFallback(msg){
+  var ta=document.createElement('textarea');
+  ta.value=msg;
+  ta.style.cssText='position:fixed;top:0;left:0;width:100%;height:200px;z-index:999;font-size:11px;background:#0d0f14;color:#e2e8f0;border:2px solid var(--green-border);padding:8px';
+  document.body.appendChild(ta);
+  ta.select();
+  var close=document.createElement('button');
+  close.textContent='✓ Done — close';
+  close.style.cssText='position:fixed;top:200px;left:0;width:100%;padding:12px;background:var(--blue-border);color:white;border:none;font-size:14px;font-weight:700;z-index:999;cursor:pointer';
+  close.onclick=function(){document.body.removeChild(ta);document.body.removeChild(close);};
+  document.body.appendChild(close);
+}
+
+function newTicker(){
+  D.ticker='';D.p2scores={};D.gates={};D.earnings=[];D.upgrades=[];
+  document.getElementById('ticker').value='';
+  document.getElementById('fetchMsg').innerHTML='';
+  goTo(0);
+}
+
+setBucket('swing');
+loadKeys();
+checkKeyWarn();
+</script>
+</body>
+</html>
